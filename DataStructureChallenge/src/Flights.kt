@@ -1,3 +1,4 @@
+import java.io.File
 import java.util.*
 
 class Flights constructor(){
@@ -9,7 +10,11 @@ class Flights constructor(){
     }
 
     fun getCity(country: String): Country {
-        return this.countries.filter{it.name == country}.single()
+        if(!this.countries.filter{it.name.equals(country)}.isEmpty()){
+
+            return this.countries.filter{it.name.equals(country)}.single()
+        }
+        return Country("",false)
 
     }
 
@@ -29,7 +34,6 @@ class Flights constructor(){
         var auxQueue = PriorityQueue<Country>(Comparator { o1, o2 -> o1.accum.toInt() - o2.accum.toInt() })
         var originCountry = getCity(origin)
         originCountry.accum = 0
-        originCountry.visited = true
         result.push(Pair(originCountry, 0L))
         auxQueue.add(originCountry)
         while (!auxQueue.isEmpty()){
@@ -40,7 +44,7 @@ class Flights constructor(){
                     if(!destiny.visited) {
                         if (c.accum + edge.weigth < destiny.accum){
                             destiny.accum = c.accum + edge.weigth
-                            result.push(Pair(destiny,destiny.accum))
+                            if (!result.contains(Pair(destiny,destiny.accum))) result.push(Pair(destiny,destiny.accum))
                             auxQueue.add(destiny)
                         }
                     }
@@ -55,6 +59,27 @@ class Flights constructor(){
     fun getCities(){
         for (c in this.countries){
             println(c.name)
+        }
+    }
+
+    fun readFile(path:String){
+        File(path).forEachLine {
+            var data = it.split(',')
+            var col:Int = 0
+            var travel:MutableList<String> = mutableListOf<String>()
+            while(col < 3){
+                if (col < 2) {
+                    if(getCity(data[col]).name.equals("")){
+                        this.addCity(data[col])
+                    }
+                    travel.add(data[col])
+                }else {
+                    var origin = travel[0]
+                    var destiny = travel[1]
+                    this.addFlight(origin,destiny,data[col].toLong())
+                }
+                col++
+            }
         }
     }
 }
