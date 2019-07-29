@@ -42,39 +42,6 @@ class Flights constructor(){
         return index
     }
 
-    fun visitAllCountries(origin: String): MutableList<Pair<Country,Long>> {
-        resetAccumAllCountries()
-        var result = mutableListOf<Pair<Country,Long>>()
-        var auxQueue = PriorityQueue<Country>(Comparator { o1, o2 -> o1.accum.toInt() - o2.accum.toInt() })
-        var originCountry = getCity(origin)
-        originCountry.accum = 0
-        result.add(Pair(originCountry, 0L))
-        auxQueue.add(originCountry)
-        while (!auxQueue.isEmpty()){
-            var c = auxQueue.poll()
-            var edges = c.edges
-            if (!c.visited){
-                for ((destiny, edge) in edges){
-                    if(!destiny.visited) {
-                        if (c.accum + edge.weigth < destiny.accum){
-                            destiny.accum = c.accum + edge.weigth
-                            var existInResult = isInResult(result, destiny)
-                            if (existInResult != -1){
-                                var auxCity = result.get(existInResult - 1 )
-                                if(auxCity.second > destiny.accum) result[existInResult - 1] = Pair(destiny, destiny.accum)
-                            }else {
-                                result.add(Pair(destiny, destiny.accum))
-                            }
-                            auxQueue.add(destiny)
-                        }
-                    }
-                }
-            }
-        }
-        result.sortBy { pair -> pair.second }
-        return result
-    }
-
     fun shortestPath (origin: String, destiny: String): MutableList<Pair<Country,Long>> {
         resetAccumAllCountries()
         var result = mutableListOf<Pair<Country, Long>>()
