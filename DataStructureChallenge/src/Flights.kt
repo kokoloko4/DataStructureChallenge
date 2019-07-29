@@ -84,22 +84,19 @@ class Flights constructor(){
 
     fun readFile(file:String){
         var path = "src/"+file
+        var endCountries = false
         File(path).forEachLine {
-            var data = it.split(',')
-            var col:Int = 0
-            var travel:MutableList<String> = mutableListOf<String>()
-            while(col < 3){
-                if (col < 2) {
-                    if(getCity(data[col]).name.equals("")){
-                        this.addCity(data[col])
-                    }
-                    travel.add(data[col])
-                }else {
-                    var origin = travel[0]
-                    var destiny = travel[1]
-                    this.addFlight(origin,destiny,data[col].toLong())
-                }
-                col++
+            if(it.equals("finPaises")){
+                endCountries = true
+            }
+            if(endCountries && !it.equals("finPaises")) {
+                var data = it.split(',')
+                var origin = data[0]
+                var destiny = data[1]
+                var cost = data[2]
+                this.addFlight(origin,destiny,cost.toLong())
+            }else if (!endCountries){
+                this.addCity(it)
             }
         }
     }
