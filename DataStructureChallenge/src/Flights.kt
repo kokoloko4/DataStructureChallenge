@@ -1,5 +1,6 @@
 import java.io.File
 import java.util.*
+import kotlin.math.cos
 
 class Flights constructor(){
     var countries = mutableListOf<Country>()
@@ -28,52 +29,86 @@ class Flights constructor(){
         this.countries.map { c -> c.accum = Long.MAX_VALUE}
     }
 
-    fun isInResult(r : MutableList<Pair<Country,Long>>, c : Country): Int {
+    fun isInResult(r : MutableList<Pair<Pair<Country,Country>,Long>>, c : Country): Int {
         if (r.isEmpty()){
             return -1
         }
         var index = 0
-        var auxCity = r[index].first
+        var auxCity = r[index].first.first
         while (index < r.size && !auxCity.name.equals(c.name)) {
-            auxCity = r[index].first
+            auxCity = r[index].first.first
             index++
         }
         if(!auxCity.name.equals(c.name)) return -1
         return index
     }
 
-    fun shortestPath (origin: String, destiny: String): MutableList<Pair<Country,Long>> {
+    fun shortestPath (origin: String, destiny2: String): MutableList<Pair<Pair<Country,Country>,Long>> {
         resetAccumAllCountries()
-        var result = mutableListOf<Pair<Country, Long>>()
+        var result = mutableListOf<Pair<Pair<Country,Country>, Long>>()
         var auxQueue = PriorityQueue<Country>(Comparator { o1, o2 -> o1.accum.toInt() - o2.accum.toInt() })
         var originCountry = getCity(origin)
         originCountry.accum = 0
-        result.add(Pair(originCountry, 0L))
+        result.add(Pair(Pair(originCountry, Country("",false)), 0L))
         auxQueue.add(originCountry)
-        while (!auxQueue.isEmpty()) {
+        var dest = false
+        while (!auxQueue.isEmpty() && !dest) {
             var c = auxQueue.poll()
             var edges = c.edges
-            if (!c.visited && !c.name.equals(destiny)) {
-                for ((destiny, edge) in edges) {
-                    if (!destiny.visited) {
-                        if (c.accum + edge.weigth < destiny.accum) {
-                            destiny.accum = c.accum + edge.weigth
-                            var existInResult = isInResult(result, destiny)
-                            if (existInResult != -1) {
-                                var auxCity = result.get(existInResult - 1)
-                                if (auxCity.second > destiny.accum) result[existInResult - 1] =
-                                    Pair(destiny, destiny.accum)
-                            } else {
-                                result.add(Pair(destiny, destiny.accum))
+            if(!c.name.equals(destiny2)) {
+                if (!c.visited) {
+                    for ((destiny, edge) in edges) {
+                        if (!destiny.visited) {
+                            if (c.accum + edge.weigth < destiny.accum) {
+                                destiny.accum = c.accum + edge.weigth
+                                var existInResult = isInResult(result, destiny)
+                                if (existInResult != -1) {
+                                    var auxCity = result.get(existInResult - 1)
+                                    if (auxCity.second > destiny.accum) {
+                                        result[existInResult - 1] = Pair(Pair(destiny, c), destiny.accum)
+                                    }
+                                } else {
+                                    result.add(Pair(Pair(destiny,c), destiny.accum))
+                                }
+                                auxQueue.add(destiny)
                             }
-                            auxQueue.add(destiny)
                         }
                     }
                 }
+            }else{
+                dest = true
             }
         }
         result.sortBy { pair -> pair.second }
         return result
+    }
+
+    fun showPath(origin: String, destiny: String, path:MutableList<Pair<Pair<Country,Country>,Long>> ){
+        path.removeAt(0)
+        if (destiny.equals("")){
+            for(res in path){
+                println("De "+res.first.second.name+" a "+res.first.first.name+" cuesta "+ res.second+"\n")
+            }
+        }else{
+            println("           De "+origin+" a "+ destiny)
+            var it = path.size - 1
+            var countryDest:Country = this.getCity(destiny)
+            var countryOrig = Country("",false)
+            var cost = 0L
+            var countries: Queue<Pair<Country,Long>> = ArrayDeque<Pair<Country,Long>>()
+            countries.add(Pair(countryDest,countryDest.accum))
+            while(it > 0 ){
+                countryDest = path.get(it).first.first
+                countryOrig = path.get(it).first.second
+                if (countryDest.name.equals(countries.peek().first.name)){
+                    cost = path.get(it).second
+                    println("De "+countryOrig.name+" a "+countryDest.name+" con acumulado "+ cost+"\n")
+                    countries.remove()
+                    countries.add(Pair(countryOrig,cost))
+                }
+                it--
+            }
+        }
     }
 
     fun getCities(){

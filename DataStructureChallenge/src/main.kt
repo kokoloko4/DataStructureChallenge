@@ -9,8 +9,6 @@ fun main(args: Array<String> ) {
     val origin = readLine()!!
     println("Destiny : ")
     val destiny = readLine()!!
-    var r: MutableList<Pair<Country,Long>> = travel.shortestPath(origin,destiny)
-    for(res in r){
-        print(res.first.name+"->"+ res.second+"\n")
-    }
+    var r: MutableList<Pair<Pair<Country,Country>,Long>> = travel.shortestPath(origin,destiny)
+    travel.showPath(origin,destiny,r)
 }
