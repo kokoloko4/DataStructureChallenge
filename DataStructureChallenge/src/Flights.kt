@@ -84,7 +84,6 @@ class Flights constructor(){
     }
 
     fun showPath(origin: String, destiny: String, path:MutableList<Pair<Pair<Country,Country>,Long>> ){
-        path.removeAt(0)
         if (destiny.equals("")){
             for(res in path){
                 println("De "+res.first.second.name+" a "+res.first.first.name+" cuesta "+ res.second+"\n")
